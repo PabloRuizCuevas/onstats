@@ -2,8 +2,9 @@
 name = "onstats"
 version = "0.9.0"
 description = "Online stats in python, based in generators with send"
-authors = ["<pablo.r.c@live.com>"]
+authors = ["Pablo Ruiz <pablo.r.c@live.com>"]
 readme = "README.md"
+repository = "https://github.com/PabloRuizCuevas/onstats"
 
 [tool.poetry.dependencies]
 python = "^3.9"
