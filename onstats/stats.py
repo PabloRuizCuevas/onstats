@@ -153,24 +153,10 @@ def cov_xy(window: int, ddof=1) -> TupleGenStat:
     m_x, m_y = ma(window), ma(window)
     s_x, s_y, s_xy = wsum(window), wsum(window), wsum(window)
     for count in range(1, window):
-        mux, muy, sx, sy, sxy = (
-            m_x.send(x),
-            m_y.send(y),
-            s_x.send(x),
-            s_y.send(y),
-            s_xy.send(x * y),
-        )
-        x, y = yield (sxy - muy * sx - mux * sy + count * muy * mux) / max(
-            count - ddof, 1
-        )
+        mux, muy, sx, sy, sxy = m_x.send(x), m_y.send(y), s_x.send(x), s_y.send(y), s_xy.send(x * y)
+        x, y = yield (sxy - muy * sx - mux * sy + count * muy * mux) / max(count - ddof, 1)
     while True:
-        mux, muy, sx, sy, sxy = (
-            m_x.send(x),
-            m_y.send(y),
-            s_x.send(x),
-            s_y.send(y),
-            s_xy.send(x * y),
-        )
+        mux, muy, sx, sy, sxy = m_x.send(x), m_y.send(y), s_x.send(x), s_y.send(y), s_xy.send(x * y)
         x, y = yield (sxy - muy * sx - mux * sy + window * muy * mux) / (window - ddof)
 
 
@@ -215,9 +201,7 @@ def delay_it(periods: int, gen: Generator) -> GenStat:
 
 
 @consumer
-def ema(
-    alpha: float | None = None, com: float | None = None, halflife: float | None = None
-) -> GenStat:
+def ema(alpha: float | None = None, com: float | None = None, halflife: float | None = None) -> GenStat:
     """
     TODO implement as well adjusted version based on https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.ewm.html
     """

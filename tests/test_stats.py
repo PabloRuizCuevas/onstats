@@ -41,9 +41,7 @@ def buff_1d_gen():
 @pytest.fixture
 def b2d_gen():
     print("Cleanup after the test")
-    data = np.array(
-        [[2, 3], [4, 2], [3, 4], [2, 3], [1, 2], [1, 1], [1, 1], [1, 1], [1, 1]]
-    )
+    data = np.array([[2, 3], [4, 2], [3, 4], [2, 3], [1, 2], [1, 1], [1, 1], [1, 1], [1, 1]])
     b_gen = (last for last in data)
     yield b_gen
 
@@ -68,9 +66,7 @@ def test_wrap(gen_c):
     # pues no estas mandando el buffer bien modificado, o si
     # pero vaya, mal
     mapped = send(gen_c, sum_f(2, lambda x: np.maximum(x, 0)))
-    np.testing.assert_array_equal(
-        np.array([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]), mapped
-    )
+    np.testing.assert_array_equal(np.array([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]), mapped)
 
 
 def test_var_pop():
@@ -174,9 +170,7 @@ def test_ema():
     np.testing.assert_array_equal(mapped, series)
 
 
-@pytest.mark.parametrize(
-    "indicator_gen, solution", zip(generators_to_test(), solutions)
-)
+@pytest.mark.parametrize("indicator_gen, solution", zip(generators_to_test(), solutions))
 def test_indicators(indicator_gen: Generator, solution):
     mapped = isend(data_1d, indicator_gen)
     np.testing.assert_array_equal(list(mapped), solution)
@@ -190,9 +184,7 @@ def test_ma_zero():
 def test_ma5():
     # p_gen = stock_price_generator()
     b_ge = [2.0, 3, 7, 2, 3, 1, 1, 1, 1, 1, 1]
-    np.testing.assert_almost_equal(
-        send(b_ge, ma(5)), [2.0, 2.5, 4.0, 3.5, 3.4, 3.2, 2.8, 1.6, 1.4, 1, 1]
-    )
+    np.testing.assert_almost_equal(send(b_ge, ma(5)), [2.0, 2.5, 4.0, 3.5, 3.4, 3.2, 2.8, 1.6, 1.4, 1, 1])
 
 
 def test_ma2d(b2d_gen):
