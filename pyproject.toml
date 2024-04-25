@@ -22,11 +22,9 @@ pytest-html = "^4.1.1"
 
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib",
-     "--cov=src",
-     "--junitxml=reports/junit/junit.xml",
-    "--html=reports/junit/report.html"]
+     "--cov=src"]
 minversion = 7.0
-pythonpath = 'src'
+pythonpath = './'
 testpaths =['tests']
 
 
