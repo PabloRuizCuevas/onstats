@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "onstats"
-version = "0.9.0"
+version = "0.9.1"
 description = "Online stats in python, based in generators with send"
 authors = ["Pablo Ruiz <pablo.r.c@live.com>"]
 readme = "README.md"

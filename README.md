@@ -4,5 +4,26 @@
 
 ## Generators Based Online Statistics
 
-This package implement online statistics written using python generators,
-with the only depencency of numpy.
+This package implement online statistics written using python generators, with the only depencency of numpy.
+
+It can callculate basic stats in an online manner with good stability.
+
+
+## install
+
+> poetry add onstats
+
+> pip install onstats
+
+
+## How to use:
+
+
+'''python
+
+from onstats import ma
+
+gma = ma(5)
+print(gma.send(3))
+
+'''
