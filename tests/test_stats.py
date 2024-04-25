@@ -25,7 +25,6 @@ from stats.send_operators import isend, send
 from pytrade.util.operators import gtsend
 from itertools import islice
 import pandas as pd
-import talib
 
 
 # Add more function names as needed

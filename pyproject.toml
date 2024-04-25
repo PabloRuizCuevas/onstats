@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "OnStats"
+name = "onstats"
 version = "1.0.0"
 description = "Online stats in python, based in generators with send"
 authors = ["<pablo.r.c@live.com>"]
