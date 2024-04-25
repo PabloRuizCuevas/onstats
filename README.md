@@ -18,12 +18,19 @@ It can callculate basic stats in an online manner with good stability.
 
 ## How to use:
 
+Import the window / rolling statistic you want to compute and send the values to it:
 
-'''python
+```python
+>>>  from onstats import ma # moving average
 
-from onstats import ma
+>>>  gma = ma(2)  # with window 2
+>>>  gma.send(3)
+3
 
-gma = ma(5)
-print(gma.send(3))
+>>>  gma.send(5)
+4
+>>>  gma.send(5)
+5
+```
 
-'''
+If w = 0 the window is infinitelly large , we will compute the normal average.
