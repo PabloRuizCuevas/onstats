@@ -6,10 +6,16 @@ authors = ["<pablo.r.c@live.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^=3.8"
+python = "^3.8"
 numpy = "^1.26.4"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.0"
 black = "^24.2.0"
 pytest-cov = "^4.1.0"
+
+
+[tool.pytest.ini_options]
+minversion = 7.0
+pythonpath = '/trade'
+testpaths =['tests']

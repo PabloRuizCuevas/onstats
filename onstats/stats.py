@@ -1,15 +1,19 @@
-from typing import Callable, Deque, Generator
-import numpy as np
-from pytrade.stats.send_operators import consumer
+from typing import Callable, Deque, Generator, TypeVar
 from collections import deque
+import numpy as np
 
-Indicator = Generator[np.ndarray | float, np.ndarray | float, None]
-TupleIndicator = Generator[np.ndarray | float, tuple[float, float] | tuple[np.ndarray | np.ndarray], None]
-Indicators = list[Indicator]
+from onstats.util import consumer
+
+
+T = TypeVar("T", np.ndarray, float)
+
+GenStat = Generator[T, T, None]
+GenStats = list[GenStat]
+TupleGenStat = Generator[T, tuple[T, T] | tuple[T], None]
 
 
 @consumer
-def raw() -> Indicator:
+def raw() -> GenStat:
     """Dont do anything, but usefull for operating"""
     last = yield 0
     while True:
@@ -17,7 +21,7 @@ def raw() -> Indicator:
 
 
 @consumer
-def ath() -> Indicator:
+def ath() -> GenStat:
     """Computes all time high"""
     value = -np.inf
     last = yield 0
@@ -27,7 +31,7 @@ def ath() -> Indicator:
 
 
 @consumer
-def ma(window: int = 0) -> Indicator:
+def ma(window: int = 0) -> GenStat:
     """Rolling moving average
     if window = 0 then the total average is computed
     """
@@ -46,12 +50,12 @@ def ma(window: int = 0) -> Indicator:
 
 
 @consumer
-def avg() -> Indicator:
+def avg() -> GenStat:
     """full average"""
     yield from avg_()
 
 
-def avg_() -> Indicator:
+def avg_() -> GenStat:
     """Review if this method is better or worst
     numerically than adding new contribution"""
     count = 0
@@ -61,7 +65,7 @@ def avg_() -> Indicator:
         cache = cache + (yield cache / count)
 
 
-def isum() -> Indicator:
+def isum() -> GenStat:
     """full Sum"""
     last = yield 0
     while True:
@@ -69,7 +73,7 @@ def isum() -> Indicator:
 
 
 @consumer
-def wsum(window: int = 0) -> Indicator:
+def wsum(window: int = 0) -> GenStat:
     """Window sum , if window is zero sum is computed"""
     if window == 0:
         yield from isum()
@@ -85,7 +89,7 @@ def wsum(window: int = 0) -> Indicator:
 
 
 @consumer
-def sum_f(window: int, function: Callable) -> Indicator:
+def sum_f(window: int, function: Callable) -> GenStat:
     """Same as sum but applying a function to the values sent"""
     deq: Deque = deque()
     value = 0.0
@@ -98,7 +102,7 @@ def sum_f(window: int, function: Callable) -> Indicator:
 
 
 @consumer
-def wsum_p(window: int, pow: int = 2) -> Indicator:
+def wsum_p(window: int, pow: int = 2) -> GenStat:
     """Sum powers of the number"""
     deq: Deque = deque()
     value = 0.0
@@ -110,7 +114,7 @@ def wsum_p(window: int, pow: int = 2) -> Indicator:
         value = value + deq[-1] ** pow - deq.popleft() ** pow
 
 
-def var_(ddof: int = 1) -> Indicator:
+def var_(ddof: int = 1) -> GenStat:
     """Computes variance"""
     mav_g, sum_g, sump_g = ma(), wsum(), wsum()
     window = 0
@@ -122,7 +126,7 @@ def var_(ddof: int = 1) -> Indicator:
 
 
 @consumer
-def var(window: int = 0, ddof: int = 1) -> Indicator:
+def var(window: int = 0, ddof: int = 1) -> GenStat:
     """m**2 + 1/n sum_i( x_i**2 - 2 mu x_i )
     1/2 sum_i( x_i**2 - 2 mu x_i )
     """
@@ -140,7 +144,7 @@ def var(window: int = 0, ddof: int = 1) -> Indicator:
 
 
 @consumer
-def cov_xy(window: int, ddof=1) -> Generator[float, tuple[float, float], None]:
+def cov_xy(window: int, ddof=1) -> TupleGenStat:
     """1/n sum_i((x_i-m_x) * (x_j m_y) )
     x_i*x_j - x_i*m_y - x_j*m_i  + m_x * m_y
     In the case x=y then it becomes same thing as var
@@ -157,7 +161,7 @@ def cov_xy(window: int, ddof=1) -> Generator[float, tuple[float, float], None]:
 
 
 @consumer
-def corr_xy(window: int, ddof: int = 0) -> Generator[float, tuple[float, float], None]:
+def corr_xy(window: int, ddof: int = 0) -> TupleGenStat:
     """Correlation"""
     cov = cov_xy(window, ddof)
     var_x, var_y = var(window, ddof), var(window, ddof)
@@ -169,7 +173,7 @@ def corr_xy(window: int, ddof: int = 0) -> Generator[float, tuple[float, float],
 
 
 @consumer
-def auto_corr(window: int, time: int = 10, ddof: int = 0) -> Indicator:
+def auto_corr(window: int, time: int = 10, ddof: int = 0) -> GenStat:
     """Auto correlation"""
     corr = corr_xy(window, ddof)
     x_delay = delay(time)
@@ -179,7 +183,7 @@ def auto_corr(window: int, time: int = 10, ddof: int = 0) -> Indicator:
 
 
 @consumer
-def delay(periods: int) -> Indicator:
+def delay(periods: int) -> GenStat:
     """Delays the iterator"""
     deq: Deque = deque()
     deq.append((yield 0))
@@ -190,14 +194,14 @@ def delay(periods: int) -> Indicator:
 
 
 @consumer
-def delay_it(periods: int, gen: Generator) -> Indicator:
+def delay_it(periods: int, gen: Generator) -> GenStat:
     for _ in range(periods):
         yield 0
     yield from gen
 
 
 @consumer
-def ema(alpha: float | None = None, com: float | None = None, halflife: float | None = None) -> Indicator:
+def ema(alpha: float | None = None, com: float | None = None, halflife: float | None = None) -> GenStat:
     """
     TODO implement as well adjusted version based on https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.ewm.html
     """
@@ -217,7 +221,7 @@ def ema(alpha: float | None = None, com: float | None = None, halflife: float | 
 
 
 @consumer
-def diff() -> Indicator:
+def diff() -> GenStat:
     """the difference of two iterators"""
     old = 0.0
     last = yield 0.0
@@ -228,7 +232,7 @@ def diff() -> Indicator:
 
 
 @consumer
-def percentual_diff() -> Indicator:
+def percentual_diff() -> GenStat:
     """if open close available is the same as percentual_spread"""
     old = 1
     last = yield 0
@@ -239,7 +243,7 @@ def percentual_diff() -> Indicator:
 
 
 @consumer
-def percentual_spread() -> Generator[float, tuple[float, float], None]:
+def percentual_spread() -> TupleGenStat:
     """relative difference between high and low"""
     low, high = yield 0.0
     while True:
@@ -247,7 +251,7 @@ def percentual_spread() -> Generator[float, tuple[float, float], None]:
 
 
 @consumer
-def normalize(window=0, sample_freq: int = 10):
+def normalize(window: int = 0, sample_freq: int = 10) -> GenStat:
     """Online normalization"""
     count = 0
     avg_g, var_g = ma(window), var(window)

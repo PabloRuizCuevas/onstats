@@ -3,8 +3,7 @@ from typing import Generator
 import numpy as np
 import pytest
 
-from pytrade.data_utils.synthetic_gen import stock_price_generator
-from stats.stats import (
+from onstats.stats import (
     ath,
     avg,
     ma,
@@ -21,9 +20,7 @@ from stats.stats import (
     corr_xy,
     percentual_spread,
 )
-from stats.send_operators import isend, send
-from pytrade.util.operators import gtsend
-from itertools import islice
+from onstats.util import isend, send
 import pandas as pd
 
 
@@ -34,7 +31,6 @@ def generators_to_test():
 
 data_1d = [2, 3, 7, 2, 3]
 solutions = [[2, 2.5, 4, 4, 4], [2, 3, 7, 7, 7], data_1d, [2, 2.5, 4.0, 3.5, 3.4]]
-p_gen = stock_price_generator()
 
 
 @pytest.fixture
@@ -180,10 +176,6 @@ def test_indicators(indicator_gen: Generator, solution):
     np.testing.assert_array_equal(list(mapped), solution)
 
 
-def test_ma_islice():
-    send(islice(p_gen, 100), ma(5))
-
-
 def test_ma_zero():
     mapped = send([1, 2, 3, 4, 5, 6], ma())
     np.testing.assert_array_equal(mapped, [1.0, 1.5, 2.0, 2.5, 3.0, 3.5])
@@ -199,10 +191,3 @@ def test_ma2d(b2d_gen):
     sol = [[2, 3], [3, 2.5], [3, 3], [3, 3], [2, 3], [1.33333333, 2], [1, 1.33333333], [1, 1], [1, 1]]
     np.testing.assert_almost_equal(send(b2d_gen, ma(3)), sol)
 
-
-def test_apply_indicators(buff_1d_gen):
-    """Applies all indicators in one data run"""
-    generators = generators_to_test()
-    indicators = gtsend(generators, buff_1d_gen, repeat_data=True)
-    indicators_sol = list(indicators)
-    np.testing.assert_array_equal(np.array(indicators_sol).T, solutions)
