@@ -1,7 +1,7 @@
 from typing import Any, Callable, Generator, Iterable, Iterator
 
 
-def consumer(func):
+def consumer(func: Generator):
     """avoid priming the generator"""
 
     def wrapper(*args, **kw):

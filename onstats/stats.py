@@ -2,7 +2,7 @@ from typing import Callable, Deque, Generator, TypeVar
 from collections import deque
 import numpy as np
 
-from onstats.util import consumer
+from .util import consumer
 
 
 T = TypeVar("T", np.ndarray, float)
