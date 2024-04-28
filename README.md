@@ -24,11 +24,11 @@ Import the window / rolling statistic you want to compute and send the values to
 
 ```python
 >>>  from onstats.stats import ma # moving average
+>>>  from onstats.util import send
 
 >>>  gma = ma(2)  # with window 2
 >>>  gma.send(3)
 3
-
 >>>  gma.send(5)
 4
 >>>  gma.send(5)
@@ -41,22 +41,17 @@ You can also feed all the iterator directly:
 
 
 ```python
->>>  from onstats.stats import ma # moving average
->>>  from onstats.util import send
-
 >>>  gma = ma(2)  # with window 2
->>>  send(gma, [3,5,3])
+>>>  send(gma, [3,5,5])
 5
 ```
 
 Or as an iterator
 
 ```python
->>>  from onstats.stats import ma # moving average
->>>  from onstats.util import send
 
 >>>  gma = ma(2)  # with window 2
->>>  for d in isend(gma, [3,5,3]):
+>>>  for d in isend(gma, [3,5,5]):
 >>>     print(d)
 3
 4
@@ -66,8 +61,6 @@ Or as an iterator
 You can also pass 2d np.arrays:
 
 ```python
->>>  from onstats.stats import ma # moving average
->>>  from onstats.util import send
 
 >>>  gma = ma(2)  # with window 2
 >>>  for d in isend(gma, np.array([[0,0],[1,2],[1,4]])):
