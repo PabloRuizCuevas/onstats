@@ -1,7 +1,7 @@
 from typing import Any, Callable, Generator, Iterable, Iterator
 
 
-def consumer(func: Generator):
+def consumer(func: Callable):
     """avoid priming the generator"""
 
     def wrapper(*args, **kw):
@@ -46,3 +46,5 @@ def msend(data: Any, *generators: Generator) -> list[Generator]:
 
 def msendg(data: Iterator, *generators: Generator) -> Generator[list[Generator], None, None]:
     return (msend(d, *generators) for d in data)
+
+

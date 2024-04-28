@@ -1,4 +1,4 @@
-from typing import Callable, Deque, Generator, TypeVar
+from typing import Any, Callable, Deque, Generator, TypeVar
 from collections import deque
 import numpy as np
 
@@ -183,21 +183,14 @@ def auto_corr(window: int, time: int = 10, ddof: int = 0) -> GenStat:
 
 
 @consumer
-def delay(periods: int) -> GenStat:
+def delay(periods: int, default: Any = 0) -> GenStat:
     """Delays the iterator"""
     deq: Deque = deque()
-    deq.append((yield 0))
+    deq.append((yield default))
     for _ in range(periods):
-        deq.append((yield 0))
+        deq.append((yield default))
     while True:
         deq.append((yield deq.popleft()))
-
-
-@consumer
-def delay_it(periods: int, gen: Generator) -> GenStat:
-    for _ in range(periods):
-        yield 0
-    yield from gen
 
 
 @consumer
@@ -266,3 +259,4 @@ def normalize(window: int = 0, sample_freq: int = 10) -> GenStat:
             s_var = np.sqrt(v)
         last = yield (last - m) / s_var
         count += 1
+
