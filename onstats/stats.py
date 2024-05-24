@@ -259,4 +259,3 @@ def normalize(window: int = 0, sample_freq: int = 10) -> GenStat:
             s_var = np.sqrt(v)
         last = yield (last - m) / s_var
         count += 1
-

@@ -46,5 +46,3 @@ def msend(data: Any, *generators: Generator) -> list[Generator]:
 
 def msendg(data: Iterator, *generators: Generator) -> Generator[list[Generator], None, None]:
     return (msend(d, *generators) for d in data)
-
-
