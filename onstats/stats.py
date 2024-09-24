@@ -1,9 +1,9 @@
-from typing import Any, Callable, Deque, Generator, TypeVar
 from collections import deque
+from typing import Any, Callable, Deque, Generator, TypeVar
+
 import numpy as np
 
 from .util import consumer
-
 
 T = TypeVar("T", np.ndarray, float)
 
@@ -30,6 +30,7 @@ def ath() -> GenStat:
         last = yield value
 
 
+
 @consumer
 def ma(window: int = 0) -> GenStat:
     """Rolling moving average
@@ -43,7 +44,7 @@ def ma(window: int = 0) -> GenStat:
     for count in range(window):
         deq.append((yield value))
         value = (value * count + deq[-1]) / (count + 1)
-    del count
+    del count  # pyright: ignore
     while True:
         deq.append((yield value))
         value = value + (deq[-1] - deq.popleft()) / window
@@ -82,11 +83,39 @@ def wsum(window: int = 0) -> GenStat:
     for count in range(window):
         deq.append((yield value))
         value = value + deq[-1]
-    del count
+    del count  # pyright: ignore
     while True:
         deq.append((yield value))
         value = value + deq[-1] - deq.popleft()
 
+
+@consumer
+def w_max(window: int) -> GenStat:
+    """Computes the max in the last n datapoints"""
+    deq: Deque = deque()
+    curr_max_ = -np.Inf
+    for count in range(window):
+        deq.append((yield curr_max_))
+        curr_max_ = max(curr_max_, deq[-1])
+    while True:
+        deq.append((yield curr_max_))
+        out = deq.popleft()
+        """Maybe is more efficient using sortedlist there is the package."""
+        curr_max_ = max(deq) if out == curr_max_ else max(curr_max_, deq[-1])
+
+@consumer
+def w_min(window: int) -> GenStat:
+    """Computes the max in the last n datapoints"""
+    deq: Deque = deque()
+    curr_min_ = np.Inf
+    for count in range(window):
+        deq.append((yield curr_min_))
+        curr_min_ = max(curr_min_, deq[-1])
+    while True:
+        deq.append((yield curr_min_))
+        out = deq.popleft()
+        """Maybe is more efficient using sortedlist there is the package."""
+        curr_max_ = max(deq) if out == curr_min_ else max(curr_min_, deq[-1])
 
 @consumer
 def sum_f(window: int, function: Callable) -> GenStat:
@@ -257,5 +286,26 @@ def normalize(window: int = 0, sample_freq: int = 10) -> GenStat:
         if count % sample_freq == 0:
             m, v = avg_g.send(last), var_g.send(last)
             s_var = np.sqrt(v)
-        last = yield (last - m) / s_var
+        last = yield (last - m) / s_var  # pyright: ignore
         count += 1
+
+# TA
+
+@consumer
+def k_stoch(window:int = 14) -> GenStat:
+    """ Stoch window is typically in days """
+    last = yield 0
+    l14_g, h14_g = w_min(window), w_max(window)
+    while True:
+        l14 = l14_g.send(last)
+        k = (last - l14)/ (h14_g.send(last)-l14) * 100
+        yield k
+
+@consumer
+def d_stoch(ma_window: int =3, k_window:int = 14) -> GenStat:
+    """ Stoch window is typically in days """
+    k_gen = k_stoch(k_window)
+    ma_g = ma(ma_window)
+    last = yield 0
+    while True:
+        last = yield ma_g.send(k_gen.send(last))

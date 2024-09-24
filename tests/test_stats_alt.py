@@ -4,23 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from onstats.stats import (
-    ath,
-    avg,
-    corr_xy,
-    cov_xy,
-    delay,
-    diff,
-    ema,
-    ma,
-    normalize,
-    percentual_spread,
-    raw,
-    sum_f,
-    var,
-    wsum,
-    wsum_p,
-)
+from onstats.stats_alt import ma
 from onstats.util import isend, send
 
 

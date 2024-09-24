@@ -1,7 +1,33 @@
-from typing import Any, Callable, Generator, Iterable, Iterator
+from typing import Any, Callable, Generator, Iterable, Iterator, TypeVar
+
+T = TypeVar("T")
 
 
-def consumer(func: Callable):
+TIME = 0
+
+
+def gtime(func):
+    time = 0
+    while True:
+        if TIME == time: # a bool is enough
+            cached = next(func)
+            yield cached
+            time +=1
+        else:
+            yield cached
+
+def timed(func):
+    def wrapper(*args, **kw):
+        gen = gtime(func(*args, **kw))
+        return gen
+    wrapper.__name__ = func.__name__
+    wrapper.__dict__ = func.__dict__
+    wrapper.__doc__ = func.__doc__
+    return wrapper
+
+
+
+def consumer(func):
     """avoid priming the generator"""
 
     def wrapper(*args, **kw):
@@ -24,6 +50,7 @@ def compose(final_gen: Generator, preprocess_gen: Generator) -> Generator:
 
 
 def gmap(op: Callable, *generators: Generator[Any, Any, None]) -> Generator:
+    """apply operation to gennerators"""
     val = yield None
     while True:
         # Yield the sum of current values
