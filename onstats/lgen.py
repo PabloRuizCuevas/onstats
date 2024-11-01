@@ -22,8 +22,8 @@ async def sequential_azip(gen1: AsyncIterator[G], gen2: AsyncIterator[H]) -> Asy
         yield await anext(gen1), await anext(gen2)
 
 
-class Ge:
-    """Lock Constrained Generators,
+class Lgen:
+    """Locked Generators,
     when next(ge) anext(ge) is executed it calls the next value on the generator and locks
     the value for future next calls till unlock is called.
 
@@ -39,17 +39,17 @@ class Ge:
         self.uuid = uuid.uuid4()  # slow
 
     def __next__(self):
-        if self.uuid not in Ge.registry:
-            Ge.registry[self.uuid] = next(self.iterator)
-        return Ge.registry[self.uuid]
+        if self.uuid not in Lgen.registry:
+            Lgen.registry[self.uuid] = next(self.iterator)
+        return Lgen.registry[self.uuid]
 
     def __iter__(self):
         return self
 
     async def __anext__(self):
-        if self.uuid not in Ge.registry:
-            Ge.registry[self.uuid] = await anext(self.iterator)
-        return Ge.registry[self.uuid]
+        if self.uuid not in Lgen.registry:
+            Lgen.registry[self.uuid] = await anext(self.iterator)
+        return Lgen.registry[self.uuid]
 
     def __aiter__(self):
         return self
@@ -60,7 +60,7 @@ class Ge:
         cls.registry = {}
 
     @classmethod
-    def consume(cls, iterators: list["Ge"]):
+    def consume(cls, iterators: list["Lgen"]):
         """Pass iterators to consume with time passing"""
         while True:
             cls.unlock()
@@ -70,7 +70,7 @@ class Ge:
                 break
 
     @classmethod
-    async def a_consume(cls, iterators: list["Ge"]):
+    async def a_consume(cls, iterators: list["Lgen"]):
         """Pass iterators to consume with time passing"""
         while True:
             cls.unlock()
@@ -80,7 +80,7 @@ class Ge:
                 break
 
     @classmethod
-    def ga(cls, func: Callable[[Any], Callable[[Any], "Ge"]]):
+    def ga(cls, func: Callable[[Any], Callable[[Any], "Lgen"]]):
         """Use as decorator for convert iterators into Ge"""
 
         def wrapper(*args, **kw):
@@ -140,30 +140,30 @@ class Ge:
         return self.nclass(other, operator.ge)
 
 
-def bfor(g: Generator, data_iter: Ge):
+def bfor(g: Generator, data_iter: Lgen):
     if isinstance(data_iter.iterator, AsyncIterator):
         return (g.send(d) async for d in data_iter)
     elif isinstance(data_iter.iterator, Iterator):
         return (g.send(d) for d in data_iter)
 
 
-@Ge.ga
-def ma(data_iter: Ge, window: int) -> Ge:
+@Lgen.ga
+def ma(data_iter: Lgen, window: int) -> Lgen:
     return bfor(ma_s(window), data_iter)
 
 
-@Ge.ga
-def ath(data_iter: Ge) -> Ge:
+@Lgen.ga
+def ath(data_iter: Lgen) -> Lgen:
     return bfor(ath_s(), data_iter)
 
 
-@Ge.ga
-def wsum(data_iter: Ge) -> Ge:
+@Lgen.ga
+def wsum(data_iter: Lgen) -> Lgen:
     return bfor(wsum_s(), data_iter)
 
 
-@Ge.ga
-def var(data_iter: Ge, window: int, ddof: int) -> Ge:
+@Lgen.ga
+def var(data_iter: Lgen, window: int, ddof: int) -> Lgen:
     return bfor(var_s(window, ddof), data_iter)
 
 
@@ -183,16 +183,16 @@ async def a_test_data_gen(price: float = 100, mu: float = 0.0002, sigma: float =
 
 
 async def amain():
-    price = Ge(i async for i in a_test_data_gen())
+    price = Lgen(i async for i in a_test_data_gen())
     comb = ma(price, 2) + ma(price, 3)
-    async for i in Ge.a_consume([comb]):
+    async for i in Lgen.a_consume([comb]):
         print(i)
 
 
 def main():
-    price = Ge(i for i in test_data_gen())
+    price = Lgen(i for i in test_data_gen())
     comb = ma(price, 2) + ma(price, 3)
-    for i in Ge.consume([comb]):
+    for i in Lgen.consume([comb]):
         print(i)
 
 
