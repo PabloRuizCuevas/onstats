@@ -1,3 +1,9 @@
+"""
+This module contains the send version of online stats generators,
+they are usefull as they are fully reusable for later doing sync and async iterable versions.
+
+"""
+
 from collections import deque
 from typing import Any, Callable, Deque, Generator, TypeVar
 

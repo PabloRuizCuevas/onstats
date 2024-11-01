@@ -1,6 +1,4 @@
-from collections import deque
-from typing import Generator, Iterator, TypeVar
-
+from typing import AsyncIterator, Generator, Iterator, TypeVar
 import numpy as np
 from onstats.stats import wsum as wsum_s, var as var_s, ath as ath_s, ma as ma_s
 
@@ -12,43 +10,27 @@ GenStats = list[GenStat]
 TupleGenStat = Generator[T, tuple[T, T], None]
 
 
-def ath(data_iter: Iterator) -> GenStat:
-    """Computes all time high"""
-    g = ath_s()
-    return (g.send(d) for d in data_iter)
+def create_iterator(g: Generator, data_iter: Generator | AsyncIterator):
+    if isinstance(data_iter, AsyncIterator):
+        return (g.send(d) async for d in data_iter)
+    elif isinstance(data_iter, Iterator):
+        return (g.send(d) for d in data_iter)
 
 
-def ma_to_fix(data_iter: Iterator, window: int) -> GenStat:
-    """moving average, clean implementation"""
-    # something is wrong, but in genreal can be done in this way
-    deq = deque()
-    value, count = 0, 0
-    for value in data_iter:
-        deq.append(value)
-        if count < window:
-            value = (value * count + value) / (count + 1)
-            count += 1
-        else:
-            value = value + (value - deq.popleft()) / window
-        yield value
+def ma(data_iter: Generator, window: int) -> Generator:
+    return create_iterator(ma_s(window), data_iter)
 
 
-def ma(data_iter: Iterator, window: int) -> GenStat:
-    g = ma_s(window)
-    return (g.send(d) for d in data_iter)
+def ath(data_iter: Generator) -> Generator:
+    return create_iterator(ath_s(), data_iter)
 
 
-def wsum(data_iter: Iterator, window: int) -> GenStat:
-    """Window sum , if window is zero sum is computed"""
-    g = wsum_s(window)
-    return (g.send(d) for d in data_iter)
+def wsum(data_iter: Generator) -> Generator:
+    return create_iterator(wsum_s(), data_iter)
 
 
-def var(data_iter: Iterator, window: int = 0, ddof: int = 1) -> GenStat:
-    """Review if this method is better or worst
-    numerically than adding new contribution"""
-    g = var_s(window, ddof)
-    return (g.send(d) for d in data_iter)
+def var(data_iter: Generator, window: int, ddof: int) -> Generator:
+    return create_iterator(var_s(window, ddof), data_iter)
 
 
 if __name__ == "__main__":
