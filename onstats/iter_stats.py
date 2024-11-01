@@ -1,7 +1,11 @@
 from typing import AsyncIterator, Generator, Iterator, TypeVar
-import numpy as np
-from onstats.stats import wsum as wsum_s, var as var_s, ath as ath_s, ma as ma_s
 
+import numpy as np
+
+from onstats.stats import ath as ath_s
+from onstats.stats import ma as ma_s
+from onstats.stats import var as var_s
+from onstats.stats import wsum as wsum_s
 
 T = TypeVar("T", np.ndarray, float)
 

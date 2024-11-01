@@ -1,10 +1,14 @@
-from typing import AsyncIterator, Callable, Generator, Iterator, TypeVar, Any
-import numpy as np
-import uuid
 import asyncio
 import operator
-from onstats.stats import wsum as wsum_s, var as var_s, ath as ath_s, ma as ma_s
+import uuid
+from typing import Any, AsyncIterator, Callable, Generator, Iterator, TypeVar
 
+import numpy as np
+
+from onstats.stats import ath as ath_s
+from onstats.stats import ma as ma_s
+from onstats.stats import var as var_s
+from onstats.stats import wsum as wsum_s
 
 G = TypeVar("G")
 H = TypeVar("H")
