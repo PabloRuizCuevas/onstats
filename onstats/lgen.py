@@ -88,7 +88,7 @@ class Lgen:
         """Use as decorator for convert iterators into Ge"""
 
         def wrapper(*args, **kw):
-            gen = Ge(func(*args, **kw))
+            gen = Lgen(func(*args, **kw))
             return gen
 
         wrapper.__name__ = func.__name__
