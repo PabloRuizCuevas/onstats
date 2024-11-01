@@ -13,7 +13,7 @@ TupleGenStat = Generator[T, tuple[T, T], None]
 
 
 @consumer
-def raw() -> GenStat:
+def raw(price) -> GenStat:
     """Dont do anything, but usefull for operating"""
     last = yield 0
     while True:

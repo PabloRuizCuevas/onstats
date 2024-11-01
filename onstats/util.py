@@ -3,32 +3,10 @@ from typing import Any, Callable, Generator, Iterable, Iterator, TypeVar
 T = TypeVar("T")
 
 
-TIME = 0
-
-
-def gtime(func):
-    time = 0
-    while True:
-        if TIME == time: # a bool is enough
-            cached = next(func)
-            yield cached
-            time +=1
-        else:
-            yield cached
-
-def timed(func):
-    def wrapper(*args, **kw):
-        gen = gtime(func(*args, **kw))
-        return gen
-    wrapper.__name__ = func.__name__
-    wrapper.__dict__ = func.__dict__
-    wrapper.__doc__ = func.__doc__
-    return wrapper
-
-
-
 def consumer(func):
-    """avoid priming the generator"""
+    """avoid priming the generator
+    Also defined in more_itertools/more.py
+    """
 
     def wrapper(*args, **kw):
         gen = func(*args, **kw)

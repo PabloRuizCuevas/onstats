@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from onstats.stats_alt import ma
+from onstats.iter_stats import ma, ath
 from onstats.util import isend, send
 
 
