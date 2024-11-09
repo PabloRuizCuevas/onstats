@@ -6,7 +6,10 @@ from typing import Any, AsyncIterator, Callable, Generator, Iterator, TypeVar
 import numpy as np
 
 from onstats.stats import ath as ath_s
+from onstats.stats import corr_xy as corr_xy_s
+from onstats.stats import delay as delay_s
 from onstats.stats import ma as ma_s
+from onstats.stats import normalize as normalize_s
 from onstats.stats import var as var_s
 from onstats.stats import wsum as wsum_s
 
@@ -57,6 +60,9 @@ class Lgen:
 
     def __aiter__(self):
         return self
+
+    def __getitem__(self, key: int):
+        return delay(self, key)
 
     @classmethod
     def unlock(cls):
@@ -169,6 +175,21 @@ def wsum(data_iter: Lgen) -> Lgen:
 @Lgen.ga
 def var(data_iter: Lgen, window: int, ddof: int) -> Lgen:
     return bfor(var_s(window, ddof), data_iter)
+
+
+@Lgen.ga
+def delay(data_iter: Lgen, periods: int, default: float = 0):
+    return bfor(delay_s(periods, default), data_iter)
+
+
+@Lgen.ga
+def normalize(data_iter: Lgen, window: int = 0, sample_freq: int = 10):
+    return bfor(normalize_s(window, sample_freq), data_iter)
+
+
+@Lgen.ga
+def corr_xy(data_iter_a: Lgen, data_iter_b: Lgen, window: int, ddof: int = 0):
+    return bfor(corr_xy_s(window, ddof), Lgen(i for i in zip(data_iter_a, data_iter_b)))
 
 
 def test_data_gen(price: float = 100, mu: float = 0.0002, sigma: float = 0.005) -> Iterator[float]:

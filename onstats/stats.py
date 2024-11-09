@@ -251,7 +251,7 @@ def ema(alpha: float | None = None, com: float | None = None, halflife: float | 
 
 @consumer
 def diff() -> GenStat:
-    """the difference of two iterators"""
+    """absolute difference curent and last step"""
     old = 0.0
     last = yield 0.0
     while True:
@@ -281,7 +281,10 @@ def percentual_spread() -> TupleGenStat:
 
 @consumer
 def normalize(window: int = 0, sample_freq: int = 10) -> GenStat:
-    """Online normalization"""
+    """Online normalization
+
+    The sample freq defines how often the variance is updated
+    """
     count = 0
     avg_g, var_g = ma(window), var(window)
     last = yield 0
