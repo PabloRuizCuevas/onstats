@@ -18,8 +18,8 @@ from onstats.stats import wsum as wsum_s
 type UnkIterator[T] = AsyncIterator[T] | Iterator[T]
 type LgenOperable = "Lgen | Iterator | float"
 
-async def sequential_azip[G,H](gen1: AsyncIterator[G], 
-                               gen2: AsyncIterator[H]) -> AsyncIterator[tuple[G, H]]:
+
+async def sequential_azip[G, H](gen1: AsyncIterator[G], gen2: AsyncIterator[H]) -> AsyncIterator[tuple[G, H]]:
     """The bad thing is that as gen1, gen2 can share asycronous deps,
     a task group raises runtime errors"""
     while True:
@@ -39,7 +39,7 @@ class Lgen[T]:
     This class is intended for working both for async and sync generators
     """
 
-    registry: dict[uuid.UUID, 'Lgen'] = {}
+    registry: dict[uuid.UUID, "Lgen"] = {}
 
     # could specify the lock by nesting giving additional argument
     def __init__(self, it: UnkIterator[T]):
@@ -134,25 +134,25 @@ class Lgen[T]:
     def __mod__(self, other: LgenOperable) -> Lgen[T]:
         return self.nclass(other, operator.mod)
 
-    def __pow__(self, other: LgenOperable)-> Lgen[T]:
+    def __pow__(self, other: LgenOperable) -> Lgen[T]:
         return self.nclass(other, operator.pow)
 
-    def __and__(self, other: LgenOperable)-> Lgen[T]:
+    def __and__(self, other: LgenOperable) -> Lgen[T]:
         return self.nclass(other, operator.and_)
 
-    def __eq__(self, other: LgenOperable)-> Lgen[T]:
+    def __eq__(self, other: LgenOperable) -> Lgen[T]:
         return self.nclass(other, operator.eq)
 
-    def __lt__(self, other: LgenOperable)-> Lgen[T]:
+    def __lt__(self, other: LgenOperable) -> Lgen[T]:
         return self.nclass(other, operator.lt)
 
-    def __le__(self, other: LgenOperable)-> Lgen[T]:
+    def __le__(self, other: LgenOperable) -> Lgen[T]:
         return self.nclass(other, operator.le)
 
-    def __gt__(self, other: LgenOperable)-> Lgen[T]:
+    def __gt__(self, other: LgenOperable) -> Lgen[T]:
         return self.nclass(other, operator.gt)
 
-    def __ge__(self, other: LgenOperable)-> Lgen[T]:
+    def __ge__(self, other: LgenOperable) -> Lgen[T]:
         return self.nclass(other, operator.ge)
 
     @classmethod
