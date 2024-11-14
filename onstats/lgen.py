@@ -6,6 +6,7 @@ from typing import Any, AsyncIterator, Callable, Generator, Iterator, TypeVar
 import numpy as np
 
 from onstats.stats import (
+    percentual_diff,
     var as var_s,
     wsum as wsum_s,
     normalize as normalize_s,
@@ -64,7 +65,7 @@ class Lgen:
     def __aiter__(self):
         return self
 
-    def __getitem__(self, key: int):
+    def __getitem__(self, key: int) -> 'Lgen':
         return delay(self, key)
 
     @classmethod
@@ -73,7 +74,7 @@ class Lgen:
         cls.registry = {}
 
     @classmethod
-    def consume(cls, iterators: list["Lgen"]) -> Generator:
+    def consume(cls, iterators: list["Lgen"]) -> Generator[list[Any], None, None]:
         """Pass iterators to consume with time passing"""
         while True:
             cls.unlock()
@@ -129,13 +130,13 @@ class Lgen:
     def __radd__(self, other: Iterator | float):
         return self.__add__(other)
 
-    def __sub__(self, other: Iterator):
+    def __sub__(self, other: 'Lgen | Iterator | float'):
         return self.nclass(other, operator.sub)
 
     def __mul__(self, other: Iterator):
         return self.nclass(other, operator.mul)
 
-    def __rmul__(self, other: Iterator | float):
+    def __rmul__(self, other: Iterator):
         return self.__mul__(other)
 
     def __truediv__(self, other: Iterator | float):
@@ -153,29 +154,29 @@ class Lgen:
     def __and__(self, other: Iterator):
         return self.nclass(other, operator.and_)
 
-    def __eq__(self, other: Iterator):
+    def __eq__(self, other: 'Lgen | Iterator | float'):
         return self.nclass(other, operator.eq)
 
-    def __lt__(self, other: Iterator):
+    def __lt__(self, other: 'Lgen | Iterator | float'):
         return self.nclass(other, operator.lt)
 
-    def __le__(self, other: Iterator):
+    def __le__(self, other: 'Lgen | Iterator | float'):
         return self.nclass(other, operator.le)
 
-    def __gt__(self, other: Iterator):
+    def __gt__(self, other: 'Lgen | Iterator | float'):
         return self.nclass(other, operator.gt)
 
-    def __ge__(self, other: Iterator):
+    def __ge__(self, other: 'Lgen | Iterator | float'):
         return self.nclass(other, operator.ge)
 
 
-def bfor(g: Generator, data_iter: Lgen):
+def bfor(g: Generator, data_iter: Lgen) -> Lgen:
     """Returns a sync or async iterator given a Locked Generator"""
     if isinstance(data_iter.iterator, AsyncIterator):
         return (g.send(d) async for d in data_iter)
     elif isinstance(data_iter.iterator, Iterator):
         return (g.send(d) for d in data_iter)
-
+    raise
 
 @Lgen.ga
 def sma(data_iter: Lgen, window: int) -> Lgen:
@@ -211,6 +212,19 @@ def wsum(data_iter: Lgen) -> Lgen:
 def var(data_iter: Lgen, window: int, ddof: int = 1) -> Lgen:
     """variance"""
     return bfor(var_s(window, ddof), data_iter)
+
+
+@Lgen.ga
+def diff(data_iter: Lgen) -> Lgen:
+    """variance"""
+    return data_iter - data_iter[1]
+
+
+@Lgen.ga
+def rdiff(data_iter: Lgen) -> Lgen:
+    """variance"""
+    # a = data_iter   (a - data_iter[1])/a
+    return bfor(percentual_diff(), data_iter)
 
 
 @Lgen.ga
