@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import asyncio
 import operator
 import uuid
 from typing import Any, AsyncGenerator, AsyncIterator, Callable, Generator, Iterator, TypeVar
-from __future__ import annotations
+
 import numpy as np
 
 from onstats.stats import ath as ath_s
